@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+frontend/dist/
+
+# ML artifacts (regenerated)
+backend/ml/artifacts/*.joblib
+backend/ml/artifacts/*.json
+
+# Data & DB
+*.db
+backend/data/
+
+# IDE & OS
+.env
+.env.local
+.DS_Store
+.idea/
+.vscode/
