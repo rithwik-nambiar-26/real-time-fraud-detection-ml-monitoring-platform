@@ -28,3 +28,5 @@ backend/data/
 .DS_Store
 .idea/
 .vscode/
+# Claude Code settings
+.claude/
