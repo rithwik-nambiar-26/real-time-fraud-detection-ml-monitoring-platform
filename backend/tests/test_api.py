@@ -8,6 +8,7 @@ os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
 from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, get_db  # noqa: E402
@@ -16,9 +17,13 @@ from app.main import app as fastapi_app  # noqa: E402
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_test_db():
-    # Create test engine
-    test_engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
-    
+    # Create test engine with StaticPool to share in-memory database
+    test_engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
     # Replace the engine in the app.database module
     import app.database
     # Dispose the old engine to close any connections
@@ -27,7 +32,7 @@ def setup_test_db():
     app.database.engine = test_engine
     # Recreate SessionLocal with the new engine
     app.database.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-    
+
     # Create all tables
     Base.metadata.create_all(bind=test_engine)
 
@@ -89,6 +94,7 @@ def test_score_high_risk_transaction(client):
         "transaction_id": f"fraud_{uuid.uuid4().hex[:8]}",
         "amount": 5000.0,
         "merchant_category": "atm",
+        "transaction_hour": 2,
         "distance_from_home_km": 300.0,
         "prev_transaction_count_24h": 15,
         "avg_transaction_amount_7d": 50.0,
@@ -126,10 +132,10 @@ def test_alerts(client):
 
 
 def test_batch_score(client, sample_transaction):
-    txns = [
-        {**sample_transaction, "transaction_id": f"batch_{uuid.uuid4().hex[:8]}"]
-        for _ in range(3)
-    ]
+    txn1 = {**sample_transaction, "transaction_id": f"batch_{uuid.uuid4().hex[:8]}"}
+    txn2 = {**sample_transaction, "transaction_id": f"batch_{uuid.uuid4().hex[:8]}"}
+    txn3 = {**sample_transaction, "transaction_id": f"batch_{uuid.uuid4().hex[:8]}"}
+    txns = [txn1, txn2, txn3]
     resp = client.post("/api/v1/score/batch", json=txns)
     assert resp.status_code == 200
     assert len(resp.json()) == 3

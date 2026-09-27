@@ -68,11 +68,11 @@ class FraudPredictor:
 
     @staticmethod
     def classify_risk(fraud_score: float) -> RiskLevel:
-        if fraud_score >= 0.85:
+        if fraud_score >= settings.risk_threshold_critical:
             return RiskLevel.CRITICAL
-        if fraud_score >= 0.65:
+        if fraud_score >= settings.risk_threshold_high:
             return RiskLevel.HIGH
-        if fraud_score >= 0.35:
+        if fraud_score >= settings.risk_threshold_low:
             return RiskLevel.MEDIUM
         return RiskLevel.LOW
 

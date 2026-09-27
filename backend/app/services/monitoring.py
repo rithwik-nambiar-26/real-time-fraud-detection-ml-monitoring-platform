@@ -128,13 +128,13 @@ class MonitoringService:
                 "threshold": settings.latency_alert_ms,
             })
 
-        if metrics.fraud_rate > 0.25 and metrics.total_scored >= 20:
+        if metrics.fraud_rate > settings.fraud_rate_alert_threshold and metrics.total_scored >= settings.min_transactions_for_fraud_alert:
             checks.append({
                 "type": "fraud_spike",
                 "severity": "critical",
                 "message": f"Fraud rate spike ({metrics.fraud_rate:.1%})",
                 "value": metrics.fraud_rate,
-                "threshold": 0.25,
+                "threshold": settings.fraud_rate_alert_threshold,
             })
 
         # Existing alert types remain active until resolved.
@@ -152,6 +152,7 @@ class MonitoringService:
                 threshold=check["threshold"],
             )
             db.add(alert_db)
+            db.flush()  # Flush to get the generated default values (like created_at)
             new_alerts.append(Alert(
                 id=alert_id,
                 alert_type=check["type"],
