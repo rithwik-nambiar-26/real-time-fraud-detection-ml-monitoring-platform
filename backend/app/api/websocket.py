@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect

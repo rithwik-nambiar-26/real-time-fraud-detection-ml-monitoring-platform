@@ -20,7 +20,10 @@ A production-style platform for real-time credit card fraud detection with ML mo
                                           │
                               ┌───────────┼───────────┐
                               ▼           ▼           ▼
-                         ML Model    SQLite DB   Monitor Store
+                         ML Model   PostgreSQL   Monitor Store
+                                    (SQLite for
+                                     local dev
+                                     & tests)
 ```
 
 ## Quick Start
@@ -51,11 +54,37 @@ Open http://localhost:5173 for the dashboard and http://localhost:8000/docs for 
 ### Docker
 
 ```bash
+cp .env.example .env   # adjust credentials (never commit .env)
 docker compose up --build
 ```
 
 - Dashboard: http://localhost:5173
 - API: http://localhost:8000
+- PostgreSQL: localhost:5432 (credentials from `.env`)
+
+The compose stack runs PostgreSQL 16 (persistent `postgres-data` volume,
+health-checked) and the backend waits for the database to be healthy
+before starting.
+
+### Database
+
+PostgreSQL is the primary database in Docker deployments. Local
+development defaults to SQLite (`./backend/data/fraud.db`) when
+`DATABASE_URL` is unset — no server required.
+
+```bash
+# Point at PostgreSQL (local or remote)
+export DATABASE_URL=postgresql+psycopg2://fraud:changeme@localhost:5432/fraud_detection
+
+# Schema migrations (Alembic)
+cd backend
+alembic upgrade head                          # apply migrations
+alembic revision --autogenerate -m "msg"      # create a migration after model changes
+```
+
+Tables are also auto-created on startup for convenience; Alembic is the
+migration strategy for schema evolution. Tests always run against
+in-memory SQLite and do not require a database server.
 
 ## API Endpoints
 

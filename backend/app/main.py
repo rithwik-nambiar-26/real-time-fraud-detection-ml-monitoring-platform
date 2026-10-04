@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from app.api.routes import router as api_router
 from app.api.websocket import router as ws_router
 from app.config import settings
-from app.database import init_db
+from app.database import check_db_connection, init_db
 from app.logging import configure_logging, get_request_id, set_request_id
 from app.schemas import HealthResponse
 from app.services.predictor import predictor
@@ -82,11 +82,13 @@ app.include_router(ws_router)
 
 @app.get("/health", response_model=HealthResponse)
 def health_check() -> HealthResponse:
+    db_connected = check_db_connection()
+    healthy = predictor.is_loaded and db_connected
     return HealthResponse(
-        status="healthy" if predictor.is_loaded else "degraded",
+        status="healthy" if healthy else "degraded",
         model_loaded=predictor.is_loaded,
         model_version=predictor.version if predictor.is_loaded else None,
-        database_connected=True,
+        database_connected=db_connected,
     )
 
 

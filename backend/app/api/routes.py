@@ -1,15 +1,15 @@
 """REST API routes for fraud scoring and monitoring."""
 
+from datetime import datetime, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.schemas import Alert, MetricsSummary, ScoreResponse, TransactionInput, TransactionRecord
 from app.services.monitoring import monitoring
 from app.services.transactions import transaction_service
-from app.services.monitoring import monitoring
 
 router = APIRouter()
 

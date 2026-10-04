@@ -24,7 +24,27 @@ class Settings(BaseSettings):
     # Database settings
     database_url: str = Field(
         default=f"sqlite:///{DATA_DIR / 'fraud.db'}",
-        description="Database URL for SQLAlchemy",
+        description="Database URL for SQLAlchemy (e.g. postgresql+psycopg2://user:pass@host:5432/db)",
+    )
+    db_pool_size: int = Field(
+        default=5,
+        ge=1,
+        description="Connection pool size for server databases (PostgreSQL)",
+    )
+    db_max_overflow: int = Field(
+        default=10,
+        ge=0,
+        description="Maximum overflow connections beyond the pool size",
+    )
+    db_pool_timeout: int = Field(
+        default=30,
+        ge=1,
+        description="Seconds to wait for a connection from the pool",
+    )
+    db_pool_recycle_seconds: int = Field(
+        default=1800,
+        ge=60,
+        description="Seconds after which pooled connections are recycled",
     )
 
     # ML model settings
